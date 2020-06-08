@@ -1,54 +1,49 @@
 import React, {Component} from 'react';
 import PropTypes from 'prop-types';
 import Messages from "./Messages";
-import { nanoid } from 'nanoid'
+import {nanoid} from 'nanoid'
 import MessageForm from "./MessageForm";
 import MessageModel from "../models/MessageModel";
+import Message from "./Message";
 
 class ChatApp extends Component {
     constructor(props) {
         super(props);
-        this.state={
-          messages:[],
+        this.state = {
+            messages: [],
         };
-        this.userId=this.getUserId();
-        this.interval= null;
-        this.intervalTime=props.intervalTime;
-        this.lastMessageId=0;
+        this.userId = this.getUserId();
+        this.interval = null;
+        this.intervalTime = props.intervalTime;
+        this.lastMessageId = 0;
     }
 
-    componentWillMount() {
-    }
-
-    getUserId()
-    {
-        let userid=window.localStorage.getItem('userid');
-        if (!userid)
-        {
-            userid=window.localStorage.setItem('userid',nanoid())
+    getUserId() {
+        let userid = window.localStorage.getItem('userid');
+        if (!userid) {
+            userid = window.localStorage.setItem('userid', nanoid())
         }
         return userid;
     }
 
     componentDidMount() {
-        window.setInterval(()=>{ this.updateChat(); },this.intervalTime);
+        window.setInterval(() => {
+            this.updateChat();
+        }, this.intervalTime);
     }
 
-    updateChat()
-    {
-        fetch( process.env.REACT_APP_UPDATE_URL)
+    updateChat() {
+        fetch(process.env.REACT_APP_UPDATE_URL)
             .then(response => response.json())
             .then(data => {
-                const remote_lastMessageId=data[data.length-1].id;
-                if (remote_lastMessageId>this.lastMessageId)
-                {
-                    this.setState({messages:[...data.map(item=>new MessageModel(item.userId,item.content,item.id))]});
-                    this.lastMessageId=remote_lastMessageId;
+                const remote_lastMessageId = (data.length > 0) ? data[data.length - 1].id : 0;
+                if (remote_lastMessageId > this.lastMessageId) {
+                    this.setState({messages: [...data.map(item => new MessageModel(item.userId, item.content, item.id))]});
+                    this.lastMessageId = remote_lastMessageId;
                 }
 
             });
     }
-
 
 
     componentWillUnmount() {
@@ -59,9 +54,8 @@ class ChatApp extends Component {
         this.sendMessage(form.content);
     };
 
-    sendMessage = (content) =>
-    {
-        const newMessage=new MessageModel(this.userId,content,(this.lastMessageId+1));
+    sendMessage = (content) => {
+        const newMessage = new MessageModel(this.userId, content, (this.lastMessageId + 1));
         fetch(process.env.REACT_APP_UPDATE_URL, {
             method: 'POST',
             headers: {
@@ -69,22 +63,21 @@ class ChatApp extends Component {
             },
             body: JSON.stringify(newMessage)
         }).then(data => {
-                this.updateChat();
-            });
-    }
+            this.updateChat();
+        });
+    };
 
     render() {
         return (
             <>
-            <div className="clearfix container">
-                <div className="chat">
-                    <div className="chat-history">
-                <Messages localUser={this.userId} list={this.state.messages}/>
+                <div className="clearfix container">
+                    <div className="chat">
+                        <div className="chat-history">
+                            <Messages localUser={this.userId} list={this.state.messages}/>
+                        </div>
                     </div>
+                    <MessageForm onSubmit={this.handleAdd}/>
                 </div>
-                <MessageForm onSubmit={this.handleAdd} />
-            </div>
-
             </>
         );
     }

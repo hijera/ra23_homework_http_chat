@@ -15,12 +15,16 @@ function Messages(props) {
             {list.length > 0 &&
             <ul>
                 {list.map(message => (
-                    <Message type={(localUser===message.userId)? "local" : "remote"} message={message} key={message.id}/>
+                    <Message type={(localUser && localUser===message.userId)? "local" : "remote"} message={message} key={message.id}/>
                     ))}
             </ul>
             }
         </>
     );
 }
+Messages.defaultProps = {
+    list: [],
+    localUser: null
+};
 
 export default Messages;

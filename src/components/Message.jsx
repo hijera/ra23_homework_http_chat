@@ -22,7 +22,8 @@ function Message(props) {
 }
 
 Message.defaultProps = {
-    type: "local"
+    type: "local",
+    message: new MessageModel(-1,null)
 };
 
 export default Message;
