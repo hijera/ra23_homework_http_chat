@@ -4,7 +4,6 @@ import Messages from "./Messages";
 import {nanoid} from 'nanoid'
 import MessageForm from "./MessageForm";
 import MessageModel from "../models/MessageModel";
-import Message from "./Message";
 
 class ChatApp extends Component {
     constructor(props) {
