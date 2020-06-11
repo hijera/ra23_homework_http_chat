@@ -10,11 +10,9 @@ class ChatApp extends Component {
         super(props);
         this.state = {
             messages: [],
+            userId: this.getUserId()
         };
-        this.userId = this.getUserId();
         this.interval = null;
-        this.intervalTime = props.intervalTime;
-        this.lastMessageId = 0;
     }
 
     getUserId() {
@@ -28,20 +26,25 @@ class ChatApp extends Component {
     componentDidMount() {
         window.setInterval(() => {
             this.updateChat();
-        }, this.intervalTime);
+        }, this.props.intervalTime);
     }
 
     updateChat() {
         fetch(process.env.REACT_APP_UPDATE_URL)
             .then(response => response.json())
             .then(data => {
+                const lastMessageId=(this.state.messages.length > 0 ) ? this.state.messages[this.state.messages.length-1].id : 0;
                 const remote_lastMessageId = (data.length > 0) ? data[data.length - 1].id : 0;
-                if (remote_lastMessageId > this.lastMessageId) {
+                if (remote_lastMessageId > lastMessageId) {
                     this.setState({messages: [...data.map(item => new MessageModel(item.userId, item.content, item.id))]});
-                    this.lastMessageId = remote_lastMessageId;
                 }
 
             });
+    }
+
+    getLastMessageId()
+    {
+        return this.state.messages.length;
     }
 
 
@@ -54,7 +57,7 @@ class ChatApp extends Component {
     };
 
     sendMessage = (content) => {
-        const newMessage = new MessageModel(this.userId, content, (this.lastMessageId + 1));
+        const newMessage = new MessageModel(this.state.userId, content, (this.lastMessageId + 1));
         fetch(process.env.REACT_APP_UPDATE_URL, {
             method: 'POST',
             headers: {
@@ -72,7 +75,7 @@ class ChatApp extends Component {
                 <div className="clearfix container">
                     <div className="chat">
                         <div className="chat-history">
-                            <Messages localUser={this.userId} list={this.state.messages}/>
+                            <Messages localUser={this.state.userId} list={this.state.messages}/>
                         </div>
                     </div>
                     <MessageForm onSubmit={this.handleAdd}/>
